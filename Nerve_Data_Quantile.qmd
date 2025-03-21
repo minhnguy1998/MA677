@@ -1,0 +1,27 @@
+---
+title: "MA677 Nerve Data Quantile"
+author: "Truc Minh Nguyen"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+nerve <- "https://www.stat.cmu.edu/~larry/all-of-statistics/=data/nerve.dat"
+
+nerve_df <- read.delim(file = nerve,
+                       sep = "\t",
+                       header = F,
+                       skipNul = T,
+                       as.is = T)
+
+nerve_df <- unlist(nerve_df) |> as.numeric() |> na.omit()
+
+nerve_F <- ecdf(nerve_df)
+plot(nerve_F)
+quantile(nerve_F)
+
+nerve_F(0.5) - nerve_F(0.25)
+
+```
+
