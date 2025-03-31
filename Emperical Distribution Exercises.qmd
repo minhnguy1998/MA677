@@ -1,0 +1,99 @@
+---
+title: "Empirical Distribution Exercises"
+author: "Truc Minh Nguyen"
+format: html
+editor: visual
+---
+
+# Problem 1: Darwin's Zea may plants
+```{r}
+# height diff - cross-fertilized minus self-fertilized in (in eighths of an inch)
+
+height_diff <- c(49,-67,8,16,6,23,28,41,14,29,56,24, 75,60,-48)
+
+#1a: Find sample mean and sample median
+sample_mean <- mean(height_diff)
+sample_med <- median(height_diff)
+
+sample_mean
+sample_med
+
+#1b: Estimate variance of sample mean and median
+n = length(height_diff)
+sample_mean_var <- var(height_diff)
+var_mean <- sample_mean_var / n
+
+var_mean
+
+# Bootstrap for variance of the sample median
+set.seed(123)  
+boot_medians <- replicate(1000, median(sample(height_diff, replace = TRUE)))
+var_median <- var(boot_medians)
+
+var_median
+
+#1c: Estimate the variance of the sample median to within .005 with probability of 0.95.
+# Run bootstrap
+B <- 10000  # Number of bootstrap samples (higher = more precision)
+medians <- replicate(B, median(sample(height_diff, replace = TRUE)))
+
+# Estimate of the variance of the sample median
+var_median2 <- var(medians)
+
+# Standard error of that variance estimate (use bootstrap of variance)
+boot_vars <- replicate(1000, var(replicate(500, median(sample(height_diff, replace = TRUE)))))
+se_var <- sd(boot_vars)
+
+# 95% margin of error 
+margin <- 1.96 * se_var
+
+# 95% CI:
+upper_CI <- var_median2 + margin
+lower_CI <- var_median2 - margin
+
+upper_CI
+lower_CI
+
+```
+
+# Problem 2: Wasserman LSAT-GPA
+```{r}
+install.packages("bootstrap")
+library(bootstrap)
+data("law82")
+head(law82)
+
+plot(law82[,2:3])
+cor(law82[,2:3])
+
+set.seed(123) 
+
+# Number of bootstrap samples
+B <- 1000
+
+# Store bootstrap correlations
+boot_corrs <- numeric(B)
+
+n <- nrow(law82)
+
+for (i in 1:B) {
+  idx <- sample(1:n, size = n, replace = TRUE)
+  sample_data <- law82[idx, ]
+  boot_corrs[i] <- cor(sample_data$LSAT, sample_data$GPA)
+}
+
+# Plot histogram of bootstrap samples
+hist(boot_corrs, breaks = 30, col = "lightblue",
+     main = "Bootstrap Distribution of Law82 Dataset Correlation",
+     xlab = "Correlation between LSAT and GPA")
+
+# 95% Confidence Interval
+ci <- quantile(boot_corrs, probs = c(0.025, 0.975))
+print(ci)
+
+# I got a pretty normal looking histogram from my bootstrap sample, but Wasserman 
+# got a left tail skew histogram.... which also lead to our confidence interval 
+# being different. 
+
+```
+
